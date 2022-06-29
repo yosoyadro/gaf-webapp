@@ -1,0 +1,13 @@
+/*div[name="card"] {
+    box-shadow: 0 5px 20px 0 rgba(0, 0, 0, 0.3);
+}*/
+
+div[name="card-image"] div {
+    background-size: cover;
+    background-position: center;
+    padding-top: 56.25%;
+}
+
+.slim[name="card-image"] div {
+    padding-top: 36%;
+}
