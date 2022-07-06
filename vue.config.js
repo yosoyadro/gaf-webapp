@@ -2,7 +2,7 @@ module.exports = {
     pwa: {
         themeColor: "#4c1d95",
         msTileColor: "#4c1d95",
-        name: "Cines Paraguay",
+        name: "Gaf Kiosk",
         start_url: "https://cinesparaguay.adro.studio/",
         display: "standalone",
         description: "Emoji ready to copy and paste! Type emoji on your keyboard. List of all emoji, just type some words to get emoji. Laughing crying emoji 😂⌨",
@@ -33,6 +33,12 @@ module.exports = {
                     purposes: "maskable"
                 }
             ]
+        },
+    },
+    pluginOptions: {
+        electronBuilder: {
+            // List native deps here if they don't work
+            externals: ['electron']
         }
     }
 }

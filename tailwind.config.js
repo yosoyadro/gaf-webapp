@@ -28,6 +28,7 @@ module.exports = {
             stone: colors.stone,
             neutral: '#171717',
             zinc: '#18181b',
+            amber: '#fde68a',
             'accent-color': '#0369a1'
         },
         spacing: {

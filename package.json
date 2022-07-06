@@ -1,28 +1,39 @@
 {
-    "name": "gafkiosk",
+    "name": "gaf-webapp",
     "version": "0.1.0",
     "private": false,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yosoyadro/gaf-webapp.git"
+    },
     "scripts": {
         "serve": "vue-cli-service serve",
         "build": "vue-cli-service build",
         "lint": "vue-cli-service lint",
         "electron:build": "vue-cli-service electron:build",
         "electron:serve": "vue-cli-service electron:serve",
+        "electron:deploy": "vue-cli-service electron:build --publish always",
         "postinstall": "electron-builder install-app-deps",
         "postuninstall": "electron-builder install-app-deps"
     },
     "main": "background.js",
     "dependencies": {
+        "@electron/remote": "^2.0.8",
         "@tailwindcss/postcss7-compat": "^2.2.17",
         "axios": "^0.25.0",
         "core-js": "^3.6.5",
         "cupertino-pane": "^1.2.82",
+        "electron-epos-printer": "^1.0.1",
+        "electron-log": "^4.4.8",
+        "electron-pos-printer": "^1.2.4",
+        "electron-updater": "^5.0.5",
         "register-service-worker": "^1.7.1",
         "swiper": "^7.4.1",
         "update-electron-app": "^2.0.1",
         "vue": "^3.0.0",
         "vue-class-component": "^8.0.0-0",
-        "vue-router": "^4.0.0-0"
+        "vue-router": "^4.0.0-0",
+        "vuex": "^4.0.2"
     },
     "devDependencies": {
         "@types/electron-devtools-installer": "^2.2.0",

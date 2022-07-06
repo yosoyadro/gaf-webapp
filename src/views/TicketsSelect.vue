@@ -1,172 +1,231 @@
 <template>
-  <div class="page tickets-page px-4 flex gap-8 lg:px-8">
-    <!-- TICKETS SELECTOR-->
-    <section class="tickets-selector w-1/2 flex flex-col gap-4">
-      <!-- tickets list -->
-      <div
-        class="
-          ticket
-          w-full
-          h-16
-          bg-neutral
-          px-4
-          flex
-          items-center
-          justify-between
-          rounded-md
-        "
-        v-for="ticket in selectedShow.tickets"
-        :key="ticket.id"
-        v-show="selectedShow.tickets.length > 0"
-      >
-        <p>{{ ticket.detalle }}</p>
-        <p>$ {{ ticket.precio }}</p>
-        <Counter @counterUpdated="addToCart(ticket, $event)" />
-      </div>
-
-      <!-- no tickets -->
-      <div
-        class="
-          ticket
-          w-full
-          h-16
-          bg-neutral
-          px-4
-          flex
-          items-center
-          justify-center
-          rounded-md
-        "
-        v-show="selectedShow.length == 0"
-      >
-        <p>No se encontraron tickets disponbles</p>
-      </div>
-    </section>
-
-    <section class="cart w-1/2">
-      <!-- MOVIE -->
-      <div class="movie w-full flex gap-4 pb-4">
-        <div class="movie-poster w-1/6 flex-none">
-          <MovieItem
-            :showTitle="false"
-            :poster="
-              selectedShow.movie.poster ? selectedShow.movie.poster : noPoster
-            "
-          />
-        </div>
-        <div class="movie-details w-5/6 flex flex-col gap-4">
-          <div class="movie-title">
-            <p class="text-xl font-bold md:text-4xl truncate">
-              {{ selectedShow.movie.nombre }}
-            </p>
-          </div>
-          <div class="movie-language-format flex gap-2">
-            <p class="format px-2 py-1 border rounded-md text-xs">
-              {{ selectedShow.movie.lenguaje }}
-            </p>
-            <p class="format px-2 py-1 border rounded-md text-xs">
-              {{ selectedShow.movie.formato }}
-            </p>
-          </div>
-          <div class="movie-screeningroom">
-            <p>Sala: {{ selectedShow.movie.sala }}</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="divider w-full border-b border-gray-600 mb-4"></div>
-
-      <!-- RESUME -->
-      <div class="resume flex flex-col gap-4">
-        <!-- Items List -->
-        <div
-          class="
-            item
-            w-full
-            flex
-            items-center
-            justify-between
-            border-b border-gray-600
-            pb-4
-          "
-          v-for="(item, index) in cart.items"
-          :key="index"
-          v-show="cart.items.length > 0"
-        >
-          <div class="item-detail">
-            <p class="text-xl">
-              {{
-                item.cantidad == 1
-                  ? item.cantidad + " Entrada"
-                  : item.cantidad + " Entradas"
-              }}
-            </p>
-            <p class="text-sm">{{ item.detalle }}</p>
-          </div>
-          <div class="item-total">
-            <p>$ {{ item.total }}</p>
-          </div>
-        </div>
-
-        <!-- no items -->
+  <div class="page tickets-page px-4 lg:px-8 pt-14">
+    <div class="content flex gap-8" v-if="!loading">
+      <!-- TICKETS SELECTOR-->
+      <section class="tickets-selector hidden gap-4 md:w-1/2 md:flex md:flex-col">
+        <!-- tickets list -->
         <div
           class="
             ticket
             w-full
-            flex flex-col
+            h-16
+            bg-neutral
+            px-4
+            flex
+            items-center
+            justify-between
+            rounded-md
+          "
+          v-for="ticket in selectedShow.tickets"
+          :key="ticket.id"
+          v-show="selectedShow.tickets.length > 0"
+        >
+          <p>{{ ticket.detalle }}</p>
+          <p>$ {{ ticket.precio }}</p>
+          <Counter @counterUpdated="addToCart(ticket, $event)" />
+        </div>
+
+        <!-- no tickets -->
+        <div
+          class="
+            ticket
+            w-full
+            h-16
+            bg-neutral
+            px-4
+            flex
             items-center
             justify-center
-            border-b border-gray-600
-            pb-4
+            rounded-md
           "
-          v-show="cart.items.length == 0"
+          v-show="selectedShow.length == 0"
         >
-          <p class="text-xl">Su compra se encuenta vacía</p>
-          <p class="text-sm">Comience agregando entradas</p>
+          <p>No se encontraron tickets disponbles</p>
+        </div>
+      </section>
+
+      <section class="cart w-full md:w-1/2">
+        <!-- MOVIE -->
+        <div class="movie w-full flex gap-4 pb-4">
+          <div class="movie-poster flex-none w-1/3 lg:w-1/5">
+            <MovieItem
+              :showTitle="false"
+              :poster="
+                selectedShow.movie.poster ? selectedShow.movie.poster : noPoster
+              "
+            />
+          </div>
+          <div class="movie-details w-2/3 flex flex-col gap-4">
+            <div class="movie-title">
+              <p class="text-xl font-bold md:text-4xl truncate">
+                {{ selectedShow.movie.nombre }}
+              </p>
+            </div>
+            <div class="movie-language-format flex gap-2">
+              <p class="format px-2 py-1 border rounded-md text-xs">
+                {{ selectedShow.movie.lenguaje }}
+              </p>
+              <p class="format px-2 py-1 border rounded-md text-xs">
+                {{ selectedShow.movie.formato }}
+              </p>
+            </div>
+            <div class="movie-screeningroom">
+              <p>{{ selectedShow.movie.nombreCine }}</p>
+              <p>Sala: {{ selectedShow.movie.sala }}</p>
+            </div>
+          </div>
         </div>
 
-        <!-- Subtotal -->
-        <!--div class="subtotal flex items-center justify-between">
-                <p class="text-xl">Subtotal</p>
-                <p class="text-xl">$0</p>
-            </div-->
+        <!-- TICKETS SELECTOR MOBILE -->
+        <section class="tickets-selector gap-4 w-full md:hidden mb-4">
+          <!-- tickets list -->
+          <div
+            class="
+              ticket
+              w-full
+              h-16
+              bg-neutral
+              px-4
+              flex
+              items-center
+              justify-between
+              rounded-md
+            "
+            v-for="ticket in selectedShow.tickets"
+            :key="ticket.id"
+            v-show="selectedShow.tickets.length > 0"
+          >
+            <p>{{ ticket.detalle }}</p>
+            <p>$ {{ ticket.precio }}</p>
+            <Counter @counterUpdated="addToCart(ticket, $event)" />
+          </div>
 
-        <!-- Service Charges -->
-        <!--div class="service-charges flex items-center justify-between">
-                <p class="text-xl">Cargos por servicio</p>
-                <p class="text-xl">$0</p>
-            </div-->
+          <!-- no tickets -->
+          <div
+            class="
+              ticket
+              w-full
+              h-16
+              bg-neutral
+              px-4
+              flex
+              items-center
+              justify-center
+              rounded-md
+            "
+            v-show="selectedShow.length == 0"
+          >
+            <p>No se encontraron tickets disponbles</p>
+          </div>
+        </section>
 
-        <!-- Total -->
-        <div class="total flex items-center justify-between">
-          <p class="text-xl font-bold">TOTAL</p>
-          <p class="text-xl font-bold">${{ cart.total }}</p>
+        <div class="divider w-full border-b border-gray-600 mb-4"></div>
+
+        <!-- RESUME -->
+        <div class="resume flex flex-col gap-4 mb-8">
+          <!-- Items List -->
+          <div
+            class="
+              item
+              w-full
+              flex
+              items-center
+              justify-between
+              border-b border-gray-600
+              pb-4
+            "
+            v-for="(item, index) in cart.items"
+            :key="index"
+            v-show="cart.items.length > 0"
+          >
+            <div class="item-detail">
+              <p class="text-xl">
+                {{
+                  item.cantidad == 1
+                    ? item.cantidad + " Entrada"
+                    : item.cantidad + " Entradas"
+                }}
+              </p>
+              <p class="text-sm">{{ item.detalle }}</p>
+            </div>
+            <div class="item-total">
+              <p>$ {{ item.total }}</p>
+            </div>
+          </div>
+
+          <!-- no items -->
+          <div
+            class="
+              ticket
+              w-full
+              flex flex-col
+              items-center
+              justify-center
+              border-b border-gray-600
+              pb-4
+            "
+            v-show="cart.items.length == 0"
+          >
+            <p class="text-xl">Su compra se encuenta vacía</p>
+            <p class="text-sm">Comience agregando entradas</p>
+          </div>
+
+          <!-- Subtotal -->
+          <!--div class="subtotal flex items-center justify-between">
+                  <p class="text-xl">Subtotal</p>
+                  <p class="text-xl">$0</p>
+              </div-->
+
+          <!-- Service Charges -->
+          <!--div class="service-charges flex items-center justify-between">
+                  <p class="text-xl">Cargos por servicio</p>
+                  <p class="text-xl">$0</p>
+              </div-->
+
+          <!-- Total -->
+          <div class="total flex items-center justify-between">
+            <p class="text-xl font-bold">TOTAL</p>
+            <p class="text-xl font-bold">${{ cart.total }}</p>
+          </div>
         </div>
-      </div>
-    </section>
 
-    <!-- FOOTER KIOSK -->
-    <section
-      class="
-        footer
-        w-full
-        fixed
-        bottom-0
-        left-0
-        bg-neutral
-        px-10
-        py-6
-        flex flex-row
-        gap-8
-        items-center
-        justify-between
-        text-white
-      "
-      v-if="kioskMode"
-    >
-      <Button class="text-black">Volver</Button>
-      <Button class="text-black">Pagar</Button>
-    </section>
+        <!-- PAY BUTTON -->
+        <div class="buttonContainer flex justify-center">
+          <Button
+            class="bg-neutral"
+            :class="cart.items.length > 0 ? 'opacity-100' : 'opacity-20'"
+            @click="pay(cart)"
+            >Finalizar</Button
+          >
+        </div>
+      </section>
+
+      <!-- FOOTER KIOSK -->
+      <section
+        class="
+          footer
+          w-full
+          fixed
+          bottom-0
+          left-0
+          bg-neutral
+          px-10
+          py-6
+          flex flex-row
+          gap-8
+          items-center
+          justify-between
+          text-white
+        "
+        v-if="kioskMode"
+      >
+        <Button class="text-black" @click="$router.go(-1)">Volver</Button>
+        <Button class="text-black">Pagar</Button>
+      </section>
+    </div>
+
+    <!-- loading spinner-->
+    <Spinner v-else class="h-screen fixed" />
   </div>
 </template>
 
@@ -175,6 +234,7 @@
 import axios from "axios";
 
 // custom components
+import Spinner from "@/components/Spinner.vue";
 import MovieItem from "@/components/MovieItem.vue";
 import Counter from "@/components/Counter.vue";
 import Button from "@/components/Button.vue";
@@ -187,11 +247,14 @@ export default defineComponent({
     MovieItem,
     Counter,
     Button,
+    Spinner,
   },
   data() {
     return {
+      loading: true,
       selectedShow: [] as any[any],
       cart: {
+        movie: [] as any[any],
         items: [] as any[any],
         total: 0,
       },
@@ -201,13 +264,13 @@ export default defineComponent({
   async created() {
     //get api url
     const apiUrl = (this as any).apiUrl;
-    
+
     // get pref
     const fref = this.$route.params.fref;
 
     //get showtimes
     const getShowtimes = axios
-      .get(apiUrl + "/tickets/"+fref)
+      .get(apiUrl + "/tickets/" + fref)
       .catch((error) => {
         console.log(error.response);
         throw "Error de Servidor";
@@ -215,7 +278,13 @@ export default defineComponent({
 
     Promise.resolve(getShowtimes).then((response) => {
       this.selectedShow = response.data;
+      this.cart.movie = response.data.movie;
+      this.loading = false;
     });
+  },
+  mounted(){
+    //scrollto top
+    window.scrollTo(0, 0);
   },
   methods: {
     addToCart(item: any[any], quantity: number) {
@@ -255,6 +324,18 @@ export default defineComponent({
 
       console.log(this.cart);
     },
-  },
+    async pay(cart: any){
+      //get api url
+      const apiUrl = (this as any).apiUrl;
+
+      const response = await axios.post(apiUrl + "/sales", cart)
+      .catch((error) => {
+        console.log(error.response);
+        throw "Error de Servidor";
+      });
+
+      console.log(response)
+    }
+  }
 });
 </script>

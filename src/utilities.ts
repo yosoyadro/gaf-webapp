@@ -1,12 +1,20 @@
 // axios
 import axios from 'axios'
 
-// set server url
-//const server = window.location.protocol+'//admin.cinesparaguay.adro.studio/api'
-const server = 'https://admin.enelcine.com.ar/api'
-
+// set apiUrl
+const apiUrl =    (process.env.NODE_ENV === 'production')
+                                        ? 'https://api.gaf.adro.studio'
+                                        : 'http://apiv1.gaf.local'
 export default{
-    getBanners: async function(){  
+    async getFromApi(request:string){
+      const response = await axios.get(apiUrl+request)
+      .catch(error => {
+        return error
+      })
+
+      return response
+    },
+    /*getBanners: async function(){  
       const response = await axios.get('https://nuevomonumental.com/mobile/consultas/banners/ObtenerTodos.php').catch(error => {
         console.log(error.response)
         //router.push('/disconnected')
@@ -23,11 +31,11 @@ export default{
       })
 
       console.log(response.data)
-    },
+    }*/
 
-    getItems: async function(category:string, request:string){
+    async getComingSoon(category:string, request:string){
     
-      const response = await axios.get(server+'/items/'+request).catch(error => {
+      const response = await axios.get('https://admin.enelcine.com.ar/api/items/'+request).catch(error => {
           console.log(error.response)
           //router.push('/disconnected')
           throw 'Error de Servidor'
@@ -129,7 +137,7 @@ export default{
         formatedDate = new Date(date + 'T12:00:00.000Z')
         formatedDate = new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeZone: 'America/Argentina/Buenos_Aires' } as any).format(formatedDate)
         return formatedDate
-    },
+    }/*,
     setHeader: function(type = '', item: any[string] = []) {
       let image
       let description
@@ -165,5 +173,5 @@ export default{
       documentElement.querySelector('[property="twitter:title"]').setAttribute('content', title + ' - EnElCine')
       documentElement.querySelector('[property="twitter:url"]').setAttribute('content', url)
       documentElement.querySelector('[property="twitter:description"]').setAttribute('content', description)
-    }
+    }*/
 }

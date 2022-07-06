@@ -2,8 +2,8 @@
   RewriteEngine On
   RewriteBase /
 
-  RewriteCond %{SERVER_PORT} 80
-  RewriteRule ^(.*)$ https://nogales.adro.studio/$1 [R,L]
+  #RewriteCond %{SERVER_PORT} 80
+  #RewriteRule ^(.*)$ https://nogales.adro.studio/$1 [R,L]
 
   RewriteCond %{HTTP_USER_AGENT} Googlebot [OR]
   RewriteCond %{HTTP_USER_AGENT} Twitterbot [OR]

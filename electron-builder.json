@@ -1,0 +1,10 @@
+{
+    "productName": "GAF Kiosk",
+    "appId": "studio.adro.gaf",
+    "artifactName": "GAFkiosk-${platform}-${arch}-${version}.${ext}",
+    "publish": [{
+        "provider": "github",
+        "owner": "yosoyadro",
+        "repo": "gaf-webapp"
+    }]
+}

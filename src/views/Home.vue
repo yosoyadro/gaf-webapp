@@ -1,5 +1,5 @@
 <template name="home">
-  <div class="home-page relative text-white">
+  <div class="home-page relative text-white pt-14 pb-20">
     <!-- FEATURED -->
     <section class="mb-6 lg:mb-10 lg:px-10"
     v-if="!kioskMode">
@@ -126,8 +126,8 @@
 // Utils
 import utilities from "../utilities";
 
-// axios
-import axios from 'axios'
+//Vuex
+import { mapState } from "vuex";
 
 // Swiper
 import { Swiper, Autoplay } from "swiper"
@@ -161,40 +161,17 @@ export default defineComponent({
         }
       ],
       config: [] as any[any],
-      cinemaInfo: [] as any[any],
       nowPlaying: [] as any[any],
       comingSoon: [] as any[any],
       noPoster: '/assets/img/no_poster.jpg'
     };
   },
-  async created(){
-    //get api url
-    const apiUrl = (this as any).apiUrl
-
-    //get config
-      const getConfig = axios.get(window.location.protocol+'//'+window.location.hostname.replace('www.','')+':'+window.location.port+'/config.json').catch(error => {
-          throw 'Error de Servidor'
-      })
-
-      await Promise.resolve(getConfig).then((response)=>{
-        const cineId = response.data.cineId
-        
-        //get now playing
-        const getNowPlaying = axios.get(apiUrl+'/movies/'+cineId).catch(error => {
-            throw 'Error de Servidor'
-        })
-
-        Promise.resolve(getNowPlaying).then((response)=>{
-          this.nowPlaying = response.data
-        })
-      })
-  },
-  mounted() {
+  async mounted() {
     //scrollto top
     window.scrollTo(0, 0);
 
     //set header
-    utilities.setHeader()
+    //utilities.setHeader()
 
     //create featured swiper
     const featuredOpts = {
@@ -235,11 +212,16 @@ export default defineComponent({
 
     new Swiper(this.$refs.comingSoon as any, comingSoonOpts);
 
+    // get now playing
+    if(this.$store.state.cinemaInfo.id){
+      this.getNowPlaying()
+    }
+
     //get thu
     const thisThu = utilities.getThu();
 
     //get coming soon movies
-    let comingSoon = utilities.getItems(
+    let comingSoon = utilities.getComingSoon(
       "peliculas",
       "peliculas?fields=*,poster.*&filter[fecha_local][gt]=" +
         thisThu +
@@ -254,7 +236,26 @@ export default defineComponent({
         );
       });
     });
+  },
+  computed: mapState(['cinemaInfo']),
+  methods:{
+    getNowPlaying(){
+      const cinemaId = this.$store.state.cinemaInfo.id
+      const getNowPlaying = utilities.getFromApi('/nowPlaying/'+cinemaId)
+
+      Promise.resolve(getNowPlaying).then((response)=>{
+        this.nowPlaying = response.data.data
+      })
+    }
+  },
+  watch:{
+    cinemaInfo(data){
+      if(data.id){ 
+        this.getNowPlaying()
+      }
+    }
   }
+
 })
 </script>
 
