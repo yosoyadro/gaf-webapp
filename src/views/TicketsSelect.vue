@@ -1,5 +1,5 @@
 <template>
-  <div class="page tickets-page px-4 lg:px-8 pt-14">
+  <div class="page tickets-page px-4 lg:px-8 pt-14 h-screen">
     <div class="content flex gap-8" v-if="!loading">
       <!-- TICKETS SELECTOR-->
       <section class="tickets-selector hidden gap-4 md:w-1/2 md:flex md:flex-col">
@@ -190,7 +190,7 @@
         </div>
 
         <!-- PAY BUTTON -->
-        <div class="buttonContainer flex justify-center">
+        <div class="buttonContainer flex justify-center" v-if="!kioskMode">
           <Button
             class="bg-neutral"
             :class="cart.items.length > 0 ? 'opacity-100' : 'opacity-20'"
@@ -220,7 +220,9 @@
         v-if="kioskMode"
       >
         <Button class="text-black" @click="$router.go(-1)">Volver</Button>
-        <Button class="text-black">Pagar</Button>
+        <router-link to="/pagar">
+          <Button class="text-black">Pagar</Button>
+        </router-link>
       </section>
     </div>
 
@@ -230,8 +232,8 @@
 </template>
 
 <script lang="ts">
-// axios
-import axios from "axios";
+// utilities
+import utilities from "@/utilities";
 
 // custom components
 import Spinner from "@/components/Spinner.vue";
@@ -262,19 +264,11 @@ export default defineComponent({
     };
   },
   async created() {
-    //get api url
-    const apiUrl = (this as any).apiUrl;
-
     // get pref
     const fref = this.$route.params.fref;
 
     //get showtimes
-    const getShowtimes = axios
-      .get(apiUrl + "/tickets/" + fref)
-      .catch((error) => {
-        console.log(error.response);
-        throw "Error de Servidor";
-      });
+    const getShowtimes = utilities.getFromApi("/tickets/" + fref)
 
     Promise.resolve(getShowtimes).then((response) => {
       this.selectedShow = response.data;
@@ -321,20 +315,18 @@ export default defineComponent({
       this.cart.items.forEach((cartItem: any[any], index: number) => {
         this.cart.total += cartItem.total;
       });
-
-      console.log(this.cart);
     },
     async pay(cart: any){
       //get api url
-      const apiUrl = (this as any).apiUrl;
+      //const apiUrl = (this as any).apiUrl;
 
-      const response = await axios.post(apiUrl + "/sales", cart)
+      this.$router.push('/pagar')
+
+      /*const response = await utilities.getFromApi(apiUrl + "/sales", cart)
       .catch((error) => {
         console.log(error.response);
         throw "Error de Servidor";
-      });
-
-      console.log(response)
+      })*/
     }
   }
 });

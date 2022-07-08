@@ -9,10 +9,43 @@ export default{
     async getFromApi(request:string){
       const response = await axios.get(apiUrl+request)
       .catch(error => {
-        return error
+        return error.response
       })
 
       return response
+    },
+    getFormattedTicket(ticketData: any[any]){
+      const formattedTicket =  `
+                <body style="font-family:sans-serif;display:flex;margin-top:24px; margin-left:24px">
+                  <div style="width:188px;flex-shrink:0">
+                    <p style="font-size:11px;font-weight:bold;">${ticketData.cine} Sala ${ticketData.sala}</p>
+                    <p style="font-size:11px;">${ticketData.fechaVenta} - ${ticketData.horaVenta}</p>
+                    <p style="font-size:20px;font-weight:bold;">${ticketData.pelicula}</p>
+                    <p style="font-size:18px;font-weight:bold;">Fecha: ${ticketData.fechaFuncion}</p>
+                    <p style="font-size:18px;font-weight:bold;">Hora: ${ticketData.horaFuncion}</p>
+                    <p style="font-size:11px;">${ticketData.nroEntrada}</p>
+                    <p style="font-size:18px;font-weight:bold;">Precio: $${ticketData.precio}</p>
+                    <p style="font-size:11px;">Sala: ${ticketData.codigoSala}</p>
+                    <p style="font-size:11px;">Función: ${ticketData.funcion}</p>
+                    <p style="font-size:11px;">CUIT: ${ticketData.cuit}</p>
+                    <p style="font-size:11px;">Talón para el espectador</p>
+                  </div>
+                  <div style="width:113px;flex-shrink:0">
+                    <p style="font-size:11px;">${ticketData.cine} Sala ${ticketData.sala}</p>
+                    <p style="font-size:11px;margin-bottom:26px">${ticketData.fechaVenta} - ${ticketData.horaVenta}</p>
+                    <p style="font-size:11px;margin-bottom:28px">${ticketData.pelicula}</p>
+                    <p style="font-size:11px;margin-bottom:26px">Fecha: ${ticketData.fechaFuncion}</p>
+                    <p style="font-size:11px;margin-bottom:26px">Hora: ${ticketData.horaFuncion}</p>
+                    <p style="font-size:11px;margin-bottom:26px">${ticketData.nroEntrada}</p>
+                    <p style="font-size:11px;margin-bottom:20px">Precio: $${ticketData.precio}</p>
+                    <p style="font-size:11px;">Sala: ${ticketData.codigoSala}</p>
+                    <p style="font-size:11px;">Función: ${ticketData.funcion}</p>
+                    <p style="font-size:11px;">CUIT: ${ticketData.cuit}</p>
+                    <p style="font-size:11px;">Talón para urna</p>
+                  </div>
+                </body>`
+
+          return formattedTicket
     },
     /*getBanners: async function(){  
       const response = await axios.get('https://nuevomonumental.com/mobile/consultas/banners/ObtenerTodos.php').catch(error => {

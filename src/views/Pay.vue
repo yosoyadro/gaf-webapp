@@ -1,27 +1,29 @@
 <template>
-    <div class="h-screen flex gap-10 items-center justify-center lg:px-10">
-        <form id="form-checkout">
-            <div class="row">
-                <input type="text" name="cardNumber" id="form-checkout__cardNumber" />
-            </div>
-            <div class="row flex gap-4">
-                <input type="text" name="expirationDate" id="form-checkout__expirationDate" />
-                <input type="text" name="securityCode" id="form-checkout__securityCode" />
-            </div>
-            <div class="row">
-                <input type="text" name="cardholderName" id="form-checkout__cardholderName"/>
-            </div>
-            <div class="row">
-                <input type="email" name="cardholderEmail" id="form-checkout__cardholderEmail"/>
-            </div>
-            
-            <select name="issuer" id="form-checkout__issuer"></select>
-            <select name="identificationType" id="form-checkout__identificationType"></select>
-            <input type="text" name="identificationNumber" id="form-checkout__identificationNumber"/>
-            <select name="installments" id="form-checkout__installments"></select>
-            <button type="submit" id="form-checkout__submit">Pagar</button>
-            <progress value="0" class="progress-bar">Cargando...</progress>
-        </form>
+    <div class="h-screen flex gap-10 items-center justify-center px-4 lg:px-10">
+        <div class="mpForm w-full md:w-1/2">
+          <form id="form-checkout">
+              <div class="row">
+                  <input type="text" name="cardNumber" id="form-checkout__cardNumber" />
+              </div>
+              <div class="row flex gap-4">
+                  <input type="text" name="expirationDate" id="form-checkout__expirationDate" />
+                  <input type="text" name="securityCode" id="form-checkout__securityCode" />
+              </div>
+              <div class="row">
+                  <input type="text" name="cardholderName" id="form-checkout__cardholderName"/>
+              </div>
+              <div class="row">
+                  <input type="email" name="cardholderEmail" id="form-checkout__cardholderEmail"/>
+              </div>
+              
+              <select name="issuer" id="form-checkout__issuer"></select>
+              <select name="identificationType" id="form-checkout__identificationType"></select>
+              <input type="text" name="identificationNumber" id="form-checkout__identificationNumber"/>
+              <select name="installments" id="form-checkout__installments"></select>
+              <button type="submit" id="form-checkout__submit">Pagar</button>
+              <progress value="0" class="progress-bar">Cargando...</progress>
+          </form>
+        </div>
     </div>
 </template>
 
@@ -169,7 +171,6 @@ export default defineComponent({
     justify-content: center;
     align-items: center;
     gap: 16px;
-    width: 50%;
   }
 
   .row{
@@ -185,5 +186,8 @@ export default defineComponent({
 
   button{
     width: 50%;
+    background: #212121;
+    padding: 8px 0;
+    border-radius: 8px;
   }
 </style>

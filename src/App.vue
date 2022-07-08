@@ -210,12 +210,6 @@ export default defineComponent({
 
       //set electron api
       const { electron } = window as any;
-
-      //get app version
-      electron.send("app_version");
-      electron.on("app_version", (arg: any[any]) => {
-          console.log(arg[0].version);
-      })
         
       //on new update
       electron.on('update_available', () => {

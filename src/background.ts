@@ -53,6 +53,7 @@ async function createWindow() {
     createProtocol('app')
     // Load the index.html when not in development
     win.loadURL('app://./index.html')
+    win.webContents.openDevTools()
   }
 
   // Remove Menu Toolbar
@@ -143,11 +144,11 @@ ipcMain.on('getPrinters', (event) => {
 });
 
 // print ticket
-ipcMain.on('print', (event, printer) => {
+ipcMain.on('print', (event, printData) => {
   const printConfig = {
     silent: true,
     printBackground: true,
-    deviceName: printer,
+    deviceName: printData.printer,
     copies: 1,
     pageSize: {
       width: 80000,
@@ -163,35 +164,7 @@ ipcMain.on('print', (event, printer) => {
     show: false
   })
 
-  const html =  `<body style="font-family:sans-serif;display:flex;margin-top:24px;">
-                  <div style="width:188px;flex-shrink:0">
-                    <p style="font-size:11px;font-weight:bold;">Nombre Cine Sala</p>
-                    <p style="font-size:11px;">00/00/00 - 00:00</p>
-                    <p style="font-size:20px;font-weight:bold;">Titulo película</p>
-                    <p style="font-size:18px;font-weight:bold;">Fecha: 00/00/00</p>
-                    <p style="font-size:18px;font-weight:bold;">Hora: 00:00</p>
-                    <p style="font-size:11px;">NOMBREENTRADANRO</p>
-                    <p style="font-size:18px;font-weight:bold;">Precio: $000</p>
-                    <p style="font-size:11px;">Sala: 000000</p>
-                    <p style="font-size:11px;">Función: 0</p>
-                    <p style="font-size:11px;">CUIT: 00-00000000-0</p>
-                    <p style="font-size:11px;">Talón para el espectador</p>
-                  </div>
-                  <div style="width:113px;flex-shrink:0">
-                    <p style="font-size:11px;">Nombre Cine Sala</p>
-                    <p style="font-size:11px;margin-bottom:26px">00/00/00 - 00:00</p>
-                    <p style="font-size:11px;margin-bottom:28px">Titulo película</p>
-                    <p style="font-size:11px;margin-bottom:26px">Fecha: 00/00/00</p>
-                    <p style="font-size:11px;margin-bottom:26px">Hora: 00:00</p>
-                    <p style="font-size:11px;margin-bottom:26px">NOMBREENTRADANRO</p>
-                    <p style="font-size:11px;margin-bottom:20px">Precio: $000</p>
-                    <p style="font-size:11px;">Sala: 000000</p>
-                    <p style="font-size:11px;">Función: 0</p>
-                    <p style="font-size:11px;">CUIT: 00-00000000-0</p>
-                    <p style="font-size:11px;">Talón para urna</p>
-                  </div>
-                </body>`
-  printWin.loadURL('data:text/html;charset=utf-8,' + encodeURI(html))
+  printWin.loadURL('data:text/html;charset=utf-8,' + encodeURI(printData.ticket))
     .then(() => {
       printWin.webContents.print(printConfig, (success: any, failureReason: any) => {
         if (success) {

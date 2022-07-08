@@ -22,7 +22,7 @@
     <div class="toast-text">{{ message }}</div>
     <div
       class="icon w-4 h-4 bg-accent-color"
-      :style="'-webkit-mask-image: url(/img/circle-exclamation-solid.svg);'"
+      :style="'-webkit-mask-image: url(/assets/icons/circle-exclamation-solid.svg);'"
     ></div>
   </div>
 </template>

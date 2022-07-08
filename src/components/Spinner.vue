@@ -24,7 +24,7 @@
         width: 100px;
         height: 100px;
         border-radius: 50%;
-        border-left-color: #fcaf17;
+        border-left-color: #212121;
         animation: spin 1s ease infinite;
     }
 

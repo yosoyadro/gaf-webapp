@@ -1,5 +1,5 @@
 <template>
-  <div class="movie-page relative px-4 lg:px-8 pt-14">
+  <div class="movie-page relative px-4 lg:px-8 pt-14 min-h-screen">
     <div class="content flex flex-col gap-8" v-show="!loading">
       <!-- main image -->
       <div class="main-image hidden relative w-full md:block"
@@ -193,7 +193,7 @@
       </section>
     </div>
     <!-- loading spinner-->
-    <Spinner v-show="loading" class="h-screen fixed" />
+    <Spinner v-show="loading" class="absolute h-screen fixed" />
   </div>
 </template>
 
@@ -204,8 +204,9 @@ import Banner from "@/components/Banner.vue";
 import MovieItem from "@/components/MovieItem.vue";
 import Button from '@/components/Button.vue'
 
-import { defineComponent } from "vue";
 import utilities from "@/utilities";
+
+import { defineComponent } from "vue";
 
 export default defineComponent({
   name: "Película",
