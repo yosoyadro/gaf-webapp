@@ -7,7 +7,8 @@ import { createStore } from 'vuex'
 const storage = createStore({
     state: {
         cinemaInfo: {},
-        printer: ''
+        printer: '',
+        cart: {}
     },
     mutations: {
         setPrinter(state, data) {
@@ -15,6 +16,9 @@ const storage = createStore({
         },
         setCinemaInfo(state, data) {
             state.cinemaInfo = data
+        },
+        setCart(state, data) {
+            state.cart = data
         }
     }
     /*,

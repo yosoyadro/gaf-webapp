@@ -1,8 +1,10 @@
 <template>
-  <div class="page tickets-page px-4 lg:px-8 pt-14 h-screen">
+  <div class="page tickets-page px-4 lg:px-8 pt-14 min-h-screen pb-10" :class="loading ? 'flex items-center justify-center' : ''">
     <div class="content flex gap-8" v-if="!loading">
       <!-- TICKETS SELECTOR-->
-      <section class="tickets-selector hidden gap-4 md:w-1/2 md:flex md:flex-col">
+      <section
+        class="tickets-selector hidden gap-4 md:w-1/2 md:flex md:flex-col"
+      >
         <!-- tickets list -->
         <div
           class="
@@ -77,7 +79,7 @@
         </div>
 
         <!-- TICKETS SELECTOR MOBILE -->
-        <section class="tickets-selector gap-4 w-full md:hidden mb-4">
+        <section class="tickets-selector flex flex-col gap-4 w-full md:hidden mb-4">
           <!-- tickets list -->
           <div
             class="
@@ -194,7 +196,7 @@
           <Button
             class="bg-neutral"
             :class="cart.items.length > 0 ? 'opacity-100' : 'opacity-20'"
-            @click="pay(cart)"
+            @click="continueToPay()"
             >Finalizar</Button
           >
         </div>
@@ -220,14 +222,15 @@
         v-if="kioskMode"
       >
         <Button class="text-black" @click="$router.go(-1)">Volver</Button>
-        <router-link to="/pagar">
-          <Button class="text-black">Pagar</Button>
-        </router-link>
+        <Button class="text-black" @click="continueToPay()">Pagar</Button>
       </section>
     </div>
 
-    <!-- loading spinner-->
-    <Spinner v-else class="h-screen fixed" />
+    <!-- loading spinner -->
+    <Spinner v-else />
+
+    <!-- Toast -->
+    <Toast ref="toast" />
   </div>
 </template>
 
@@ -236,10 +239,11 @@
 import utilities from "@/utilities";
 
 // custom components
-import Spinner from "@/components/Spinner.vue";
-import MovieItem from "@/components/MovieItem.vue";
-import Counter from "@/components/Counter.vue";
-import Button from "@/components/Button.vue";
+import Spinner from "@/components/Spinner.vue"
+import MovieItem from "@/components/MovieItem.vue"
+import Counter from "@/components/Counter.vue"
+import Button from "@/components/Button.vue"
+import Toast from "@/components/Toast.vue"
 
 import { defineComponent } from "vue";
 
@@ -250,17 +254,20 @@ export default defineComponent({
     Counter,
     Button,
     Spinner,
+    Toast,
   },
   data() {
     return {
       loading: true,
       selectedShow: [] as any[any],
       cart: {
+        saleId: 0,
         movie: [] as any[any],
         items: [] as any[any],
         total: 0,
       },
       noPoster: "/assets/img/no_poster.jpg",
+      showConfirmDialog: false
     };
   },
   async created() {
@@ -268,7 +275,7 @@ export default defineComponent({
     const fref = this.$route.params.fref;
 
     //get showtimes
-    const getShowtimes = utilities.getFromApi("/tickets/" + fref)
+    const getShowtimes = utilities.getFromApi("/tickets/" + fref);
 
     Promise.resolve(getShowtimes).then((response) => {
       this.selectedShow = response.data;
@@ -276,7 +283,7 @@ export default defineComponent({
       this.loading = false;
     });
   },
-  mounted(){
+  mounted() {
     //scrollto top
     window.scrollTo(0, 0);
   },
@@ -316,18 +323,30 @@ export default defineComponent({
         this.cart.total += cartItem.total;
       });
     },
-    async pay(cart: any){
-      //get api url
-      //const apiUrl = (this as any).apiUrl;
+    async continueToPay() {
 
-      this.$router.push('/pagar')
+      //set loading
+      this.loading = true
 
-      /*const response = await utilities.getFromApi(apiUrl + "/sales", cart)
+      //post sale
+      const response = await utilities.postToApi("/sales", this.cart)
       .catch((error) => {
-        console.log(error.response);
-        throw "Error de Servidor";
-      })*/
-    }
-  }
+        const toast = (this.$refs as any).toast
+        toast.show(error.response.data.message)
+      })
+
+      const cineId = response.data.data.idCine
+      const codigoVenta = response.data.data.codigoVenta
+
+      //add sale id to cart
+      this.cart.saleId = codigoVenta
+
+      //store cart
+      this.$store.commit('setCart', this.cart)
+
+      //push to pay
+      this.$router.push('/pagar/'+cineId+'/'+codigoVenta)
+    },
+  },
 });
 </script>

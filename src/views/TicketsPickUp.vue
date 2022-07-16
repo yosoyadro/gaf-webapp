@@ -35,10 +35,10 @@
             <p class="text-2xl">Imprimiendo entradas</p>
             <!-- BACK BUTTON -->
             <router-link to="/" class="buttonContainer flex justify-center">
-            <Button
-                class="bg-neutral"
-                >Volver al inicio</Button
-            >
+                <Button
+                    class="bg-neutral"
+                    >Volver al inicio</Button
+                >
             </router-link>
         </div>
 
@@ -51,7 +51,7 @@
 //custom components
 import Button from '@/components/Button.vue'
 import Toast from "@/components/Toast.vue"
-import Spinner from "@/components/Spinner.vue";
+import Spinner from "@/components/Spinner.vue"
 
 import utilities from "@/utilities";
 
@@ -96,8 +96,8 @@ export default defineComponent({
                 toast.show("No se ha configurado una impresora")
             }else{
 
-                if(this.ticketCode.length != 6 ){
-                    toast.show("El número ingresado debe ser de al menos 8 digitos")
+                if(this.ticketCode.length < 6 ){
+                    toast.show("El número ingresado debe ser de al menos 6 digitos")
                 }
                 else{
                     this.view = 'loading'

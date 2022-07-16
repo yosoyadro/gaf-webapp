@@ -40,5 +40,10 @@ module.exports = {
             // List native deps here if they don't work
             externals: ['electron']
         }
+    },
+    devServer: {
+        https: true,
+        port: 8080,
+        public: 'https://localhost:8080'
     }
 }

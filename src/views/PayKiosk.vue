@@ -12,13 +12,14 @@
     "
   >
     <!-- PAY FORM -->
-    <div v-show="view == 'pay'" class="mpForm w-full md:w-1/2 lg:w-1/3">
+    <div v-show="view == 'pay'" class="mpForm w-full md:w-1/2">
       <form id="form-checkout">
         <div class="row">
           <input
             type="text"
             name="cardNumber"
             id="form-checkout__cardNumber"
+            v-model="cardNumber"
           />
         </div>
         <div class="row flex gap-4">
@@ -26,6 +27,7 @@
             type="text"
             name="expirationDate"
             id="form-checkout__expirationDate"
+            v-model="cardExp"
           />
           <input
             type="text"
@@ -38,6 +40,7 @@
             type="text"
             name="cardholderName"
             id="form-checkout__cardholderName"
+            v-model="cardName"
             required
           />
         </div>
@@ -63,81 +66,37 @@
         />
         <select name="installments" id="form-checkout__installments"></select>
         <button type="submit" id="form-checkout__submit">Pagar</button>
-        <img class="h-8" src="https://http2.mlstatic.com/frontend-assets/mp-web-navigation/ui-navigation/5.19.1/mercadopago/logo__large.png" alt="Mercado Pago">
       </form>
     </div>
 
     <!-- EMPTY CART -->
-    <div
-      v-show="view == 'emptyCart'"
-      class="emptyCart flex flex-col gap-8 items-center justify-center"
-    >
+    <div v-show="view == 'emptyCart'" class="emptyCart flex flex-col gap-8 items-center justify-center">
       <div class="printing-icon w-40 h-40 bg-neutral p-8 rounded-full">
-        <img src="/assets/icons/ticket-outline.svg" alt="Vacío" />
+        <img src="/assets/img/ticket-machine.png" alt="Imprimiendo" />
       </div>
-      <p class="text-2xl">No tienes entradas por pagar</p>
+      <p class="text-2xl">Imprimiendo entradas</p>
       <!-- BACK BUTTON -->
       <router-link to="/" class="buttonContainer flex justify-center">
         <Button class="bg-neutral">Volver al inicio</Button>
       </router-link>
-    </div>
-
-    <!-- ERROR -->
-    <div
-      v-show="view == 'error'"
-      class="emptyCart flex flex-col gap-8 items-center justify-center"
-    >
-      <div class="printing-icon w-40 h-40 bg-neutral p-8 rounded-full">
-        <img src="/assets/icons/alert-outline.svg" alt="Error" />
-      </div>
-      <p class="text-2xl">Hubo un error al conectarse a Mercado Pago</p>
-      <!-- RETRY BUTTON -->
-      <div class="buttonContainer flex justify-center">
-        <Button class="bg-neutral" @click="retryPay()">Rententar</Button>
-      </div>
-    </div>
-
-    <!-- APPROVED -->
-    <div
-      v-show="view == 'approved'"
-      class="emptyCart flex flex-col gap-8 items-center justify-center"
-    >
-      <div class="printing-icon w-40 h-40 bg-neutral p-8 rounded-full">
-        <img src="/assets/icons/checkmark-outline.svg" alt="Acreditado" />
-      </div>
-      <p class="text-2xl">¡Pago realizado!</p>
-      <p class="text-xl">Podés retirar tus entrada con el código:</p>
-      <p class="text-4xl">{{$store.state.cart.saleId}}</p>
-      <!-- BACK BUTTON -->
-      <router-link to="/" class="buttonContainer flex justify-center">
-        <Button class="bg-neutral">Volver al inicio</Button>
-      </router-link>
-    </div>
-
-    <!-- REJECTED -->
-    <div
-      v-show="view == 'rejected'"
-      class="emptyCart flex flex-col gap-8 items-center justify-center"
-    >
-      <div class="printing-icon w-40 h-40 bg-neutral p-8 rounded-full">
-        <img src="/assets/icons/close-outline.svg" alt="Acreditado" />
-      </div>
-      <p class="text-2xl">No pudimos procesar tu pago</p>
-      <!-- RETRY BUTTON -->
-      <div class="buttonContainer flex justify-center">
-        <Button class="bg-neutral" @click="retryPay()">Rententar</Button>
-      </div>
     </div>
 
     <!-- LOADING -->
     <Spinner v-show="view == 'loading'" class="h-screen fixed" />
+
+    <input
+      type="text"
+      class="text-black hidden"
+      ref="cardInput"
+      v-model.lazy="rawCardData"
+    />
   </div>
 </template>
 
 <script lang="ts">
 //custom components
 import Spinner from "@/components/Spinner.vue";
-import Button from "@/components/Button.vue";
+import Button from '@/components/Button.vue'
 
 //utilities
 import utilities from "@/utilities";
@@ -153,15 +112,17 @@ export default defineComponent({
   data() {
     return {
       view: "",
-      amount: this.$store.state.cart.total ? this.$store.state.cart.total.toString() : 0,
-      description: this.$store.state.cart.movie ? 'Entradas para '+this.$store.state.cart.movie.nombre : ''
+      rawCardData: "",
+      cardNumber: "",
+      cardExp: "",
+      cardName: "",
     };
   },
   components: {
     Spinner,
-    Button,
+    Button
   },
-  async mounted() {
+  mounted() {
     //this.cardSwipeInit();
 
     //show loading
@@ -169,38 +130,26 @@ export default defineComponent({
 
     //check cart
     if (this.$store.state.cart.total) {
+      //get cart total
+      const amount = this.$store.state.cart.total.toString();
 
       //mount MP Form
-      this.mountMpForm(this.amount, this.description);
+      this.mountMpForm(amount);
 
       //show pay
-      setTimeout(() => {
-        this.view = "pay";
-      }, 2000);
+      this.view = "pay";
     } else {
       //empty cart
       this.view = "emptyCart";
     }
   },
   methods: {
-    mountMpForm(amount: string, description: string) {
-      //transfer current instance
-      const vm = this
-
+    mountMpForm(amount: string) {
       //get current cinema id
       const cinemaId = this.$store.state.cinemaInfo.id;
 
-      //get current sale id
-      const saleId = this.$store.state.cart.saleId;
-
-
       //create mp instance
-      const mpPublicKey = (process.env.NODE_ENV === 'production')
-                          ? 'APP_USR-c631463c-0b6d-4d92-8aef-dab69c9adf00'
-                          : 'TEST-bbe7c118-402e-4323-8972-3480162742a9'
-      
-      //init mp instance
-      const mp = new MercadoPago(mpPublicKey);
+      const mp = new MercadoPago("TEST-bbe7c118-402e-4323-8972-3480162742a9");
 
       //create cardForm
       cardForm = mp.cardForm({
@@ -217,6 +166,7 @@ export default defineComponent({
             placeholder: "E-mail",
           },
           cardNumber: {
+            //id: 'form-checkout__cardNumber',
             id: "form-checkout__cardNumber",
             placeholder: "Número de la tarjeta",
           },
@@ -230,7 +180,7 @@ export default defineComponent({
           },
           expirationDate: {
             id: "form-checkout__expirationDate",
-            placeholder: "MM/YYYY",
+            placeholder: "Vencimiento (MM/YYYY)",
           },
           identificationType: {
             id: "form-checkout__identificationType",
@@ -270,13 +220,12 @@ export default defineComponent({
 
             const data = {
               cinemaId: cinemaId,
-              saleId: saleId,
               token,
               issuer_id,
               payment_method_id,
               transaction_amount: Number(amount),
               installments: Number(installments),
-              description: description,
+              description: "product description",
               payer: {
                 email,
                 identification: {
@@ -284,9 +233,11 @@ export default defineComponent({
                   number: identificationNumber,
                 },
               },
-            }
+            };
 
-            vm.processPayment(data)
+            const payment = await utilities.postToApi("/mpPay", data);
+
+            console.log(payment);
           },
           onFetching: function (resource: any) {
             console.log("fetching... ", resource);
@@ -297,32 +248,64 @@ export default defineComponent({
     unmountMpForm() {
       cardForm.unmount();
     },
-    async processPayment(data:Record<string, unknown>){
-      //show loading
-      this.view = 'loading'
+    cardSwipeInit() {
+      const cardInput = (this as any).$refs.cardInput;
 
-      //send to mp
-      const payment = await utilities.postToApi("/mpPay", data);
+      cardInput.focus();
 
-      //set view
-      this.view = payment.data.status
+      let timer: any;
+
+      cardInput.addEventListener("keypress", () => {
+        clearTimeout(timer);
+
+        timer = setTimeout(() => {
+          this.cardSwipeEnd(this.rawCardData);
+          cardInput.value = "";
+        }, 300);
+      });
     },
-    retryPay(){
-      //unmount current instance
-        this.unmountMpForm()
+    cardSwipeEnd(rawCardData: string) {
+      console.log(rawCardData);
 
-      //mount new instance
-      this.mountMpForm(this.amount, this.description)
+      //regex for ^
+      const pattern1 = new RegExp(
+        "^%B([0-9]{12,18})\\^([A-Z ,-/&]+)\\^([0-9]+)"
+      );
+      const match1 = pattern1.exec(rawCardData);
 
-      //set pay view
-      this.view = 'pay'
-    }
+      //regex for &
+      const pattern2 = new RegExp("^%B([0-9]{12,18})+&([A-Z ,-/&]+)+&([0-9]+)");
+      const match2 = pattern2.exec(rawCardData);
+
+      const delimiter = match1 ? "^" : "&";
+
+      if (match1 || match2) {
+        const cardData = rawCardData.replace(/  +/g, " ").split(delimiter);
+        const cardNumber = cardData[0].replace("%B", "").trim();
+        const cardName = cardData[1]
+          .replace(",", "")
+          .replace("-", " ")
+          .replace("/", " ")
+          .replace("&", " ")
+          .trim();
+        const cardExp = (
+          cardData[2].substring(2, 4) +
+          "/" +
+          cardData[2].substring(0, 2)
+        ).trim();
+
+        this.cardNumber = cardNumber;
+        this.cardName = cardName;
+        this.cardExp = cardExp;
+      } else {
+        console.log("lectura incorrecta");
+      }
+    },
   },
   watch: {
     $route() {
-      if (typeof cardForm != "undefined") {
-        //unmount current instance
-        this.unmountMpForm()
+      if( typeof cardForm != 'undefined'){
+        this.unmountMpForm();
       }
     },
   },

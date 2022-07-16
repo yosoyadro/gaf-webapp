@@ -1,13 +1,13 @@
 {
     "name": "gaf-webapp",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "private": false,
     "repository": {
         "type": "git",
         "url": "https://github.com/yosoyadro/gaf-webapp.git"
     },
     "scripts": {
-        "serve": "vue-cli-service serve",
+        "serve": "vue-cli-service serve --https true",
         "build": "vue-cli-service build",
         "lint": "vue-cli-service lint",
         "electron:build": "vue-cli-service electron:build",
@@ -31,6 +31,7 @@
         "swiper": "^7.4.1",
         "update-electron-app": "^2.0.1",
         "vue": "^3.0.0",
+        "vue-cardswipe": "^0.1.12",
         "vue-class-component": "^8.0.0-0",
         "vue-router": "^4.0.0-0",
         "vuex": "^4.0.2"

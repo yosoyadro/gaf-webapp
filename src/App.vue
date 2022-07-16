@@ -68,11 +68,13 @@
     <!-- MAIN -->
     <main
       class="text-white"
-      :class="kioskMode ? 'min-h-screen' : 'pb-20'"
+      :class="!kioskMode ? 'min-h-screen' : 'pb-20'"
     >
       <router-view v-slot="{ Component }">
         <transition name="fade">
-          <component :is="Component" />
+          <!--keep-alive exclude="Pagar"-->
+            <component :is="Component" />
+          <!--/keep-alive-->
         </transition>
       </router-view>
     </main>
@@ -138,9 +140,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, reactive } from "vue";
 
-// axios
+// utilities
 import utilities from "./utilities";
 
 // custom components
@@ -176,33 +178,18 @@ export default defineComponent({
   },
   async created() {
     //get config
-    /*const getConfig = axios
-      .get(
-        window.location.protocol +
-          "//" +
-          window.location.hostname.replace("www.", "") +
-          ":" +
-          window.location.port +
-          "/config.json"
-      )
-      .catch((error) => {
-        throw "Error de Servidor";
-      });*/
-
-    //await Promise.resolve(getConfig).then((response) => {
+    const cinemaConfig = await utilities.getConfig()
 
     //get cinema info
-    const cinemaId = 68;
+    const cinemaId = cinemaConfig.data.cinemaId;
+    const cinemaInfo = await utilities.getFromApi("/cinemas/" + cinemaId);
 
-    const getCinemaInfo = utilities.getFromApi("/cinemas/" + cinemaId);
-
-    Promise.resolve(getCinemaInfo).then((response: any) => {
-      if (response.data.status == "ok") {
-        this.$store.commit("setCinemaInfo", response.data.data);
-      } else {
-        alert("No se pudo obtener la información de este cine");
-      }
-    });
+    if (cinemaInfo.data.status == "ok") {
+      this.$store.commit("setCinemaInfo", cinemaInfo.data.data);
+    } else {
+      const toast = this.$refs.toast as any
+      toast.show("Hubo un problema al cargar la información de este cine. Por favor, recargue la web.")
+    }
   },
   mounted() {
     //Electron
@@ -213,7 +200,7 @@ export default defineComponent({
         
       //on new update
       electron.on('update_available', () => {
-        const toast = this.$refs.toast as CustomVue
+        const toast = this.$refs.toast as any
         toast.show("Hay una nueva actualización. Se inició la descarga.")
       })
 
@@ -271,11 +258,9 @@ export default defineComponent({
 }
 
 /*-- Transition --*/
-.fade-enter-active, .fade-leave-active /* .fade-leave-active below version 2.1.8 */ {
-  position: absolute;
+/*.fade-enter-active, .fade-leave-active {
   width: 100%;
-  left: 0;
-}
+}*/
 
 /*-- Content --*/
 /*.content p{
@@ -294,7 +279,7 @@ export default defineComponent({
     max-width: 100% !important;
 }*/
 
-/*.fade-enter-active{
+.fade-enter-active{
   animation: enter .3s linear;
 }
 
@@ -305,15 +290,12 @@ export default defineComponent({
 @keyframes enter {
   0% {
     opacity: 0;
-    padding-top: 64px;
   }
   50% {
     opacity: 0;
-    padding-top: 64px;
   }
   100% {
     opacity: 100;
-    padding-top: 0px;
   }
 }
 
@@ -323,8 +305,7 @@ export default defineComponent({
   }
   100% {
     opacity: 0;
-    }
+  }
 }
-*/
 </style>
 

@@ -1,11 +1,19 @@
 <template>
-  <div class="movie-page relative px-4 lg:px-8 pt-14 min-h-screen">
+  <div
+    class="movie-page relative px-4 lg:px-8 pt-14 min-h-screen"
+    :class="loading ? 'flex items-center justify-center' : ''"
+  >
     <div class="content flex flex-col gap-8" v-show="!loading">
       <!-- main image -->
-      <div class="main-image hidden relative w-full md:block"
-      v-if="!kioskMode">
+      <div class="main-image hidden relative w-full md:block" v-if="!kioskMode">
         <Banner
-          :image="(movie.urlTrailer) ? 'https://img.youtube.com/vi/'+getTrailerId(movie.urlTrailer)+'/maxres1.jpg' : null"
+          :image="
+            movie.urlTrailer !== ''
+              ? 'https://img.youtube.com/vi/' +
+                getTrailerId(movie.urlTrailer) +
+                '/maxres1.jpg'
+              : null
+          "
           :showText="false"
           :showButton="false"
         />
@@ -46,15 +54,10 @@
           md:justify-center
           md:transition
         "
-        :class="(play) ? 'md:flex' : 'md:hidden'"
+        :class="play ? 'md:flex' : 'md:hidden'"
         v-if="!kioskMode"
       >
-        <div class="
-          video-container
-          relative
-          w-full
-          bg-neutral
-          md:w-3/4">
+        <div class="video-container relative w-full bg-neutral md:w-3/4">
           <div
             class="
               player-header
@@ -78,23 +81,14 @@
             ref="youtube"
             class="video-body relative w-full"
             style="padding-top: 56.25%"
-          >
-              
-          </div>
+          ></div>
         </div>
       </div>
 
       <!-- movie info / showtimes -->
       <section
-        class="
-          movie
-          relative
-          w-full
-          flex
-          gap-8
-          mb-10
-          overflow-hidden"
-          :class="(!kioskMode) ? 'md:px-4 md:-mt-36' : null"
+        class="movie relative w-full flex gap-8 mb-10 overflow-hidden"
+        :class="!kioskMode ? 'md:px-4 md:-mt-36' : null"
       >
         <!-- poster desktop -->
         <div class="poster hidden md:w-1/5 md:flex md:flex-none">
@@ -106,33 +100,33 @@
 
         <div class="mobile w-full md:w-4/5 flex-none">
           <!-- title -->
-          <div class="title flex gap-4 items-center md:h-36">
-              <div class="poster w-2/5 flex-none md:hidden">
-                <MovieItem
-                  :showTitle="false"
-                  :poster="movie.poster ? movie.poster : noPoster"
-                />
-              </div>
-              <div class="text flex flex-col gap-4">
-                  <p class="text-xs">Comprá tus entradas para</p>
-                  <p
-                  class="
-                      title
-                      text-xl
-                      font-bold
-                      md:text-4xl
-                  "
-                  v-if="movie.nombre"
-                  >
-                  {{ movie.nombre }}
-                  </p>
-              </div>
+          <div class="title flex gap-4 items-center md:h-32">
+            <div class="poster w-2/5 flex-none md:hidden">
+              <MovieItem
+                :showTitle="false"
+                :poster="movie.poster ? movie.poster : noPoster"
+              />
+            </div>
+            <div class="text flex flex-col gap-4">
+              <p class="text-xs">Comprá tus entradas para</p>
+              <p
+                class="title text-xl font-bold mb-4 md:text-4xl"
+                v-if="movie.nombre"
+              >
+                {{ movie.nombre }}
+              </p>
+            </div>
           </div>
 
           <!-- showtimes -->
-          <div class="showtimes" v-if="showtimes.length > 0">
+          <div
+            class="showtimes"
+            v-if="showtimes.length > 0 && movie.vender == 1"
+          >
             <div class="showtimes w-full flex flex-col gap-4">
-              <div class="dates flex border-b border-gray-600 mb-4 overflow-auto">
+              <div
+                class="dates flex border-b border-gray-600 mb-4 overflow-auto"
+              >
                 <div
                   class="date flex-none w-24 text-center py-4 cursor-pointer"
                   :class="itemIndex == 0 ? 'border-b-4' : null"
@@ -146,16 +140,24 @@
                 </div>
               </div>
               <div
-                class="shows w-full flex gap-8"
+                class="
+                  shows
+                  w-full
+                  grid grid-cols-3
+                  md:grid-cols-6
+                  lg:grid-cols-8
+                  gap-8
+                "
                 v-show="selectedDay.shows"
               >
                 <div
-                  class="show-container w-1/4 md:w-1/6 lg:w-1/12"
+                  class="show-container"
                   v-for="(show, showIndex) in selectedDay.shows"
                   :key="showIndex"
+                  v-show="show.vender == 1"
                 >
                   <div class="show text-center cursor-pointer">
-                    <router-link :to="'/entradas/'+show.fref">
+                    <div class="showtime" @click="selectShow(show)">
                       <p
                         class="
                           px-4
@@ -169,8 +171,10 @@
                       >
                         {{ show.hora }}
                       </p>
-                    </router-link>
-                    <p class="text-xs">{{ show.idioma }} - {{ show.formato }}</p>
+                    </div>
+                    <p class="text-xs">
+                      {{ show.idioma }} - {{ show.formato }}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -181,19 +185,43 @@
           <div class="no-showtimes py-8 text-center md:text-left" v-else>
             <p class="text-xl font-bold">No Hay funciones disponibles</p>
           </div>
-        </div>      
+        </div>
       </section>
 
       <!-- FOOTER KIOSK -->
       <section
-        class="footer w-full fixed bottom-0 left-0 bg-neutral px-10 py-6 flex flex-row gap-8 items-center justify-between text-white"
-        v-if="kioskMode">
+        class="
+          footer
+          w-full
+          fixed
+          bottom-0
+          left-0
+          bg-neutral
+          px-10
+          py-6
+          flex flex-row
+          gap-8
+          items-center
+          justify-between
+          text-white
+        "
+        v-if="kioskMode"
+      >
         <Button class="text-black" @click="$router.go(-1)">Volver</Button>
         <Button class="text-black">Continuar</Button>
       </section>
     </div>
+
     <!-- loading spinner-->
-    <Spinner v-show="loading" class="absolute h-screen fixed" />
+    <Spinner v-show="loading" />
+
+    <!-- Dialog -->
+    <Dialog
+      :open="showDialog"
+      :message="dialogMessage"
+      @onCancel="onDialogCancel"
+      @onConfirm="onDialogContinue"
+    />
   </div>
 </template>
 
@@ -202,7 +230,8 @@
 import Spinner from "@/components/Spinner.vue";
 import Banner from "@/components/Banner.vue";
 import MovieItem from "@/components/MovieItem.vue";
-import Button from '@/components/Button.vue'
+import Button from "@/components/Button.vue";
+import Dialog from "@/components/Dialog.vue";
 
 import utilities from "@/utilities";
 
@@ -214,7 +243,8 @@ export default defineComponent({
     Banner,
     MovieItem,
     Button,
-    Spinner
+    Spinner,
+    Dialog,
   },
   data() {
     return {
@@ -223,9 +253,13 @@ export default defineComponent({
       movie: [] as any[any],
       showtimes: [] as any[any],
       selectedDay: [] as any[any],
-      selectedShow: [] as any[any],
       noPoster: "/assets/img/no_poster.jpg",
-      play: false
+      play: false,
+      showDialog: false,
+      dialogMessage: "",
+      onDialogContinue: Function as any,
+      onDialogCancel: Function as any,
+      canSale: 0,
     };
   },
   async created() {
@@ -233,74 +267,75 @@ export default defineComponent({
     const pref = this.$route.params.pref;
 
     //get showtimes
-    const getShowtimes = utilities.getFromApi('/movie/'+pref)
+    const getShowtimes = await utilities.getFromApi("/movie/" + pref)
 
-    Promise.resolve(getShowtimes).then((response) => {
-      this.movie = response.data.data.movie
+    //set movie
+    this.movie = getShowtimes.data.data.movie;
 
-      //set video player
-      this.setVideoPlayer()
+    //set video player
+    this.setVideoPlayer()
 
-      //set index
-      let index = 0;
+    //set index
+    let index = 0
 
-      //set previous date
-      let prevDate: string;
+    //set previous date
+    let prevDate: string
 
-      response.data.data.showtimes.forEach((showtime: any[any]) => {
-        // set date
-        let date = showtime.fechaHora.date.split(" ")[0];
+    //parse showtimes
+    getShowtimes.data.data.showtimes.forEach((showtime: any[any]) => {
+      // set date
+      let date = showtime.fechaHora.date.split(" ")[0];
 
-        //format showtime data
-        let showtimeData = {} as any;
-        showtimeData.hora = showtime.fechaHora.date.split(" ")[1].slice(0, -10);
-        showtimeData.formato = showtime.formato;
-        showtimeData.idioma = showtime.lenguaje;
-        showtimeData.fref = showtime.fref;
-        showtimeData.sala = showtime.sala;
-        showtimeData.tickets = showtime.tickets;
+      //format showtime data
+      let showtimeData = {} as any;
+      showtimeData.hora = showtime.fechaHora.date.split(" ")[1].slice(0, -10);
+      showtimeData.formato = showtime.formato;
+      showtimeData.idioma = showtime.lenguaje;
+      showtimeData.fref = showtime.fref;
+      showtimeData.sala = showtime.sala;
+      showtimeData.tickets = showtime.tickets;
+      showtimeData.vender = showtime.vender;
 
-        // set date array
-        if (prevDate != date) {
-          // update date
-          prevDate = date;
+      // set date array
+      if (prevDate != date) {
+        // update date
+        prevDate = date;
 
-          //update index
-          index++;
+        //update index
+        index++;
 
-          //init array
-          this.showtimes[index - 1] = [] as any[any];
+        //init array
+        this.showtimes[index - 1] = [] as any[any];
 
-          // set day
-          let day = new Date(date);
-          const days = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-          this.showtimes[index - 1]["day"] = days[day.getDay()];
+        // set day
+        let day = new Date(date);
+        const days = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+        this.showtimes[index - 1]["day"] = days[day.getDay()];
 
-          //set short date
-          const shortDate = date.split("-");
-          this.showtimes[index - 1]["date"] = shortDate[2] + "/" + shortDate[1];
+        //set short date
+        const shortDate = date.split("-");
+        this.showtimes[index - 1]["date"] = shortDate[2] + "/" + shortDate[1];
 
-          this.showtimes[index - 1]["shows"] = [] as any[any];
-        }
-
-        // push showtime data to date
-        this.showtimes[index - 1]["shows"].push(showtimeData);
-      });
-
-      //defaut selected day
-      if(this.showtimes.length > 0){
-        this.selectedDay = this.showtimes[0];
+        this.showtimes[index - 1]["shows"] = [] as any[any];
       }
 
-      this.loading = false
+      // push showtime data to date
+      this.showtimes[index - 1]["shows"].push(showtimeData);
     });
+
+    //defaut selected day
+    if (this.showtimes.length > 0) {
+      this.selectedDay = this.showtimes[0];
+    }
+
+    this.loading = false;
   },
   mounted() {
     //scrollto top
     window.scrollTo(0, 0);
   },
   methods: {
-    getTrailerId(url: string){
+    getTrailerId(url: string) {
       //clean url
       url = url.replace(/"/g, "");
 
@@ -320,26 +355,28 @@ export default defineComponent({
         id = url.split("/")[4];
       }
 
-      return id
+      return id;
     },
-    setVideoPlayer(){
-      const trailerId = this.getTrailerId(this.movie.urlTrailer) as string
-      if(this.$refs.youtube){
-        (this.$refs.youtube as HTMLElement).innerHTML = '' as string
-        (this.$refs.youtube as HTMLElement).innerHTML = '<iframe width="560" height="315" class="youtube w-full h-full position absolute top-0 left-0" src="https://www.youtube.com/embed/'+trailerId+'?autoplay=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>' as string
+    setVideoPlayer() {
+      if (this.movie.urlTrailer !== "") {
+        const trailerId = this.getTrailerId(this.movie.urlTrailer) as string;
+        if (this.$refs.youtube) {
+          (this.$refs.youtube as HTMLElement).innerHTML = "" as string;
+          (this.$refs.youtube as HTMLElement).innerHTML =
+            ('<iframe width="560" height="315" class="youtube w-full h-full position absolute top-0 left-0" src="https://www.youtube.com/embed/' +
+              trailerId +
+              '?autoplay=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>') as string;
+        }
       }
     },
     playVideo() {
-      this.play = true
+      this.play = true;
     },
     stopVideo() {
-      this.setVideoPlayer()
-      this.play = false
+      this.setVideoPlayer();
+      this.play = false;
     },
     selectDay(index: number, data: any[any]) {
-      //remove previous ticket prices
-      this.selectedShow = [] as any[any]
-
       //remove border on previous date
       (this.$refs as any).date.forEach(
         (item: HTMLElement, itemIndex: number) => {
@@ -351,11 +388,29 @@ export default defineComponent({
         }
       );
 
-      this.selectedDay = data
+      this.selectedDay = data;
     },
-    selectShow(data: any[any]) {
-      this.selectedShow = data;
-    }
+    selectShow(show: any[string]) {
+      //set dialog message
+      this.dialogMessage =
+        "Estás a punto de comprar entradas para<br><b>" +
+        this.movie.nombre +
+        "</b><br>a las <b>" +
+        show.hora +
+        " Hs</b>";
+
+      //set callbacks
+      this.onDialogContinue = () => {
+        this.$router.push("/entradas/" + show.fref);
+      };
+
+      this.onDialogCancel = () => {
+        this.showDialog = false;
+      };
+
+      //show dialog
+      this.showDialog = true;
+    },
   },
 });
 </script>

@@ -1,5 +1,5 @@
 <template name="home">
-  <div class="home-page relative text-white pt-14 pb-20">
+  <div class="home-page relative text-white pt-14">
     <!-- FEATURED -->
     <section class="mb-6 lg:mb-10 lg:px-10"
     v-if="!kioskMode">
