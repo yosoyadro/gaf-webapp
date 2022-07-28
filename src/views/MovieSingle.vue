@@ -7,13 +7,7 @@
       <!-- main image -->
       <div class="main-image hidden relative w-full md:block" v-if="!kioskMode">
         <Banner
-          :image="
-            movie.urlTrailer !== ''
-              ? 'https://img.youtube.com/vi/' +
-                getTrailerId(movie.urlTrailer) +
-                '/maxres1.jpg'
-              : null
-          "
+          :image="bannerImage"
           :showText="false"
           :showButton="false"
         />
@@ -249,6 +243,7 @@ export default defineComponent({
   data() {
     return {
       loading: true,
+      bannerImage: '',
       videoId: "",
       movie: [] as any[any],
       showtimes: [] as any[any],
@@ -263,14 +258,24 @@ export default defineComponent({
     };
   },
   async created() {
+    // get cinemaId
+    const cinemaId = this.$route.params.cinemaId;
+
     // get pref
     const pref = this.$route.params.pref;
 
     //get showtimes
-    const getShowtimes = await utilities.getFromApi("/movie/" + pref)
+    const getShowtimes = await utilities.getFromApi("/movie/" + cinemaId+ "/" +pref)
 
     //set movie
     this.movie = getShowtimes.data.data.movie;
+
+    //set banner image
+    if(this.movie.urlTrailer !== ''){
+      this.bannerImage =    'https://img.youtube.com/vi/' +
+                            this.getTrailerId(this.movie.urlTrailer) +
+                            '/maxres1.jpg'
+    }
 
     //set video player
     this.setVideoPlayer()
@@ -295,6 +300,7 @@ export default defineComponent({
       showtimeData.sala = showtime.sala;
       showtimeData.tickets = showtime.tickets;
       showtimeData.vender = showtime.vender;
+      showtimeData.disponibles = showtime.disponibles;
 
       // set date array
       if (prevDate != date) {
@@ -343,19 +349,24 @@ export default defineComponent({
       let id: string;
 
       //get domain
-      let link = new URL(url);
-      const domain = link.hostname;
+      try {
+        let link = new URL(url);
+        const domain = link.hostname;
 
-      //get id
-      if (domain == "youtu.be") {
-        id = link.pathname.replace("/", "");
-      } else if (link.searchParams.get("v")) {
-        id = link.searchParams.get("v") as string;
-      } else {
-        id = url.split("/")[4];
-      }
+        //get id
+        if (domain == "youtu.be") {
+          id = link.pathname.replace("/", "");
+        } else if (link.searchParams.get("v")) {
+          id = link.searchParams.get("v") as string;
+        } else {
+          id = url.split("/")[4];
+        }
 
-      return id;
+        return id;
+        }
+        catch (_) {
+          return 0
+        }
     },
     setVideoPlayer() {
       if (this.movie.urlTrailer !== "") {
@@ -391,8 +402,18 @@ export default defineComponent({
       this.selectedDay = data;
     },
     selectShow(show: any[string]) {
+      // get cinemaId
+      const cinemaId = this.$route.params.cinemaId;
+
+      //init dialog message
+      this.dialogMessage = ''
+
+      if(show.disponibles < 10){
+        this.dialogMessage += "<b>¡ATENCIÓN!<br>Quedan pocas entradas para esta función</b><br><br>"
+      }
+
       //set dialog message
-      this.dialogMessage =
+      this.dialogMessage +=
         "Estás a punto de comprar entradas para<br><b>" +
         this.movie.nombre +
         "</b><br>a las <b>" +
@@ -401,7 +422,7 @@ export default defineComponent({
 
       //set callbacks
       this.onDialogContinue = () => {
-        this.$router.push("/entradas/" + show.fref);
+        this.$router.push("/entradas/" +cinemaId + "/"+ show.fref);
       };
 
       this.onDialogCancel = () => {

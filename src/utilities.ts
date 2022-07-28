@@ -3,8 +3,8 @@ import axios from 'axios'
 
 // set apiUrl
 const apiUrl = (process.env.NODE_ENV === 'production')
-  ? 'https://api.gaf.adro.studio'
-  : 'https://apiv1.gaf.local'
+  ? window.location.protocol+'//api.gaf.adro.studio'
+  : window.location.protocol+'//apiv1.gaf.local'
 export default {
   async getConfig() {
     const response= axios.get(
@@ -24,7 +24,7 @@ export default {
 
     return response
   },
-  async postToApi(request: string, data: {}) {
+  async postToApi(request: string, data: Record<string, unknown>) {
     const response = await axios.post(apiUrl + request, data)
       .catch(error => {
         return error.response

@@ -297,6 +297,10 @@ export default defineComponent({
         this.cardNumber = cardNumber;
         this.cardName = cardName;
         this.cardExp = cardExp;
+
+        const input =  document.getElementById("form-checkout__cardNumber") as any
+        input.value = cardNumber
+        input.dispatchEvent(new Event('input'))
       } else {
         console.log("lectura incorrecta");
       }

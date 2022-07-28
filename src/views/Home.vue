@@ -14,7 +14,7 @@
             v-for="(item, index) in featured"
             :key="index"
           >
-            <Banner v-if="item" :image="item.image" />
+            <Banner v-if="item" :image="item.url" />
           </div>
 
           <div class="swiper-pagination"></div>
@@ -23,7 +23,7 @@
       <!-- Skeleton -->
       <div
         v-show="featured.length == 0"
-        class="flex gap-2 px-4 animate-pulse lg:px-10"
+        class="animate-pulse"
       >
         <Banner />
       </div>
@@ -47,7 +47,7 @@
         Comprá tu entrada
       </p>
       <div v-if="nowPlaying.length > 0" class="showtimes grid grid-cols-2 md:grid-cols-4 gap-4 px-4 lg:px-10">
-        <router-link :to="'/pelicula/'+item.pref" v-for="(item,index) in nowPlaying" :key="index">
+        <router-link :to="'/pelicula/'+$store.state.cinemaInfo.id+'/'+item.pref" v-for="(item,index) in nowPlaying" :key="index">
           <MovieItem
             :title="item.nombre"
             :poster="(item.poster) ? item.poster : noPoster"
@@ -149,17 +149,7 @@ export default defineComponent({
   },
   data() {
     return {
-      featured: [
-        {
-          image: '/assets/img/banner_01.jpg'
-        },
-        {
-          image: '/assets/img/banner_02.jpg'
-        },
-        {
-          image: '/assets/img/banner_03.jpg'
-        }
-      ],
+      featured: [] as any[any],
       config: [] as any[any],
       nowPlaying: [] as any[any],
       comingSoon: [] as any[any],
@@ -172,27 +162,6 @@ export default defineComponent({
 
     //set header
     //utilities.setHeader()
-
-    //create featured swiper
-    const featuredOpts = {
-      centeredSlides: true,
-      spaceBetween: 8,
-      speed: 500,
-      loop: true,
-      autoplay: {
-        delay: 5000,
-      },
-      breakpoints: {
-        768: {
-          spaceBetween: 16,
-        },
-      },
-    };
-
-    setTimeout(() => {
-      new Swiper(this.$refs.featured as any, featuredOpts);
-    }, 1);
-
 
     //create coming soon swiper
     const comingSoonOpts = {
@@ -214,6 +183,7 @@ export default defineComponent({
 
     // get now playing
     if(this.$store.state.cinemaInfo.id){
+      this.getFeatured()
       this.getNowPlaying()
     }
 
@@ -239,6 +209,36 @@ export default defineComponent({
   },
   computed: mapState(['cinemaInfo']),
   methods:{
+    getFeatured(){
+      const cinemaId = this.$store.state.cinemaInfo.id
+      const getBanners = utilities.getFromApi('/banners/'+cinemaId)
+
+      Promise.resolve(getBanners).then((response)=>{
+        this.featured = response.data.data
+
+        //create featured swiper
+        const featuredOpts = {
+          centeredSlides: true,
+          spaceBetween: 8,
+          speed: 500,
+          loop: true,
+          autoplay: {
+            delay: 5000,
+          },
+          breakpoints: {
+            768: {
+              spaceBetween: 16,
+            },
+          },
+        };
+
+        if(this.featured.length > 0){
+          setTimeout(()=>{
+            new Swiper(this.$refs.featured as any, featuredOpts)
+          }, 1)
+        }
+      })
+    },
     getNowPlaying(){
       const cinemaId = this.$store.state.cinemaInfo.id
       const getNowPlaying = utilities.getFromApi('/nowPlaying/'+cinemaId)
@@ -251,6 +251,7 @@ export default defineComponent({
   watch:{
     cinemaInfo(data){
       if(data.id){ 
+        this.getFeatured()
         this.getNowPlaying()
       }
     }

@@ -8,22 +8,17 @@ const routes: Array<RouteRecordRaw> = [
     component: Home
   },
   {
-    path: '/pelicula/:pref',
+    path: '/pelicula/:cinemaId:/:pref',
     name: 'Película',
     component: () => import('../views/MovieSingle.vue')
   },
   {
     path: '/admin',
     name: 'Admin',
-    redirect: '/admin/banners'
-  },
-  {
-    path: '/admin/:section',
-    name: 'Admin Section',
     component: () => import('../views/Admin.vue')
   },
   {
-    path: '/entradas/:fref',
+    path: '/entradas/:cinemaId/:fref',
     name: 'Entradas',
     component: () => import('../views/TicketsSelect.vue')
   },
